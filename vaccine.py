@@ -27,8 +27,8 @@ def send(message, state):
     }
     # Replace the receivernumber, sender, and password with your own, and consider using an argument\dict for multiple senders.
     # To use gmail, you need to allow less security apps to connect
-    to_number = f"RECEIVERNUMBER{carriers['tmobile']}"
-    sender = 'SENDER' # ", ".join() for multiple
+    to_number = f"RECEIVERNUMBER{carriers['tmobile']}" # ", ".join() for multiple
+    sender = 'SENDER' 
     password = 'PASSWORD'
     subject = f"CVS Availability in {state}"
 
