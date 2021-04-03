@@ -17,21 +17,22 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import email.utils
 
-carriers = {
-	'att':      '@mms.att.net',
-	'tmobile':  '@tmomail.net',
-	'verizon':  '@vtext.com',
-	'sprint':   '@page.nextel.com',
-    'gmail':    '@gmail.com'
-}
-
-def send(message):
-    # Replace the number with your own, or consider using an argument\dict for multiple senders.
-    to_number = 'RECEIVERNUMBER{}'.format(carriers['tmobile'])
-    sender = 'WHOYOUARE'
-    subject = 'CVS Availability in CA'
+def send(message, state):
+    carriers = {
+        'att':      '@mms.att.net',
+        'tmobile':  '@tmomail.net',
+        'verizon':  '@vtext.com',
+        'sprint':   '@page.nextel.com',
+        'gmail':    '@gmail.com'
+    }
+    # Replace the receivernumber, sender, and password with your own, and consider using an argument\dict for multiple senders.
+    # To use gmail, you need to allow less security apps to connect
+    to_number = f"RECEIVERNUMBER{carriers['tmobile']}"
+    sender = 'SENDER' # ", ".join() for multiple
     password = 'PASSWORD'
-    port = 587 # 465 for SSL, 587 for starttls
+    subject = f"CVS Availability in {state}"
+
+    port = 587 # 587 for starttls, 465 for SSL and use ssl
     smtp_server = "smtp.gmail.com"
     msg_body = ", ".join(message)
 
@@ -39,7 +40,6 @@ def send(message):
     msg['From'] = sender
     msg['To'] = to_number
     msg['subject'] = subject
-    msg['Message-ID'] = email.utils.make_msgid()
     part = MIMEText(msg_body, 'plain', 'UTF-8')
     msg.attach(part)
     # Establish a secure session with gmail's outgoing SMTP server using your gmail account
@@ -48,7 +48,7 @@ def send(message):
     server.login(sender, password)
 
 	# Send text message through SMS gateway of destination number
-    server.sendmail( sender, to_number, message.as_string())
+    server.sendmail( sender, to_number, msg.as_string())
     server.quit()
 
 def findAVaccine():
@@ -63,7 +63,7 @@ def findAVaccine():
 
         message = []
 
-        response = requests.get("https://www.cvs.com/immunizations/covid-19-vaccine.vaccine-status.{}.json?vaccineinfo".format(state.lower()), headers={"Referer":"https://www.cvs.com/immunizations/covid-19-vaccine"})
+        response = requests.get(f"https://www.cvs.com/immunizations/covid-19-vaccine.vaccine-status.{state.lower()}.json?vaccineinfo", headers={"Referer":"https://www.cvs.com/immunizations/covid-19-vaccine"})
         payload = response.json()
 
         thetime = time.ctime()
@@ -80,7 +80,7 @@ def findAVaccine():
                 print(city + ',',state,'--',status)
 
         print('\n')
-        send(message)
+        send(message, state)
         time.sleep(3600) ##This runs every 1 hour (in seconds). Update here if you'd like it to go every 10min (600sec)
 
 findAVaccine() ###this final line runs the function. Your terminal will output the cities every 60seconds
