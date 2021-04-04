@@ -26,11 +26,11 @@ def send(message, thetime, state):
         'sprint':   '@page.nextel.com',
         'gmail':    '@gmail.com'
     }
-    # Replace the receivernumber, sender, and password with your own, and consider using an argument\dict for multiple senders.
-    # To use gmail, you need to allow less security apps to connect
+    # Replace the receivernumber, sender, and password with your own, and consider using a list for multiple senders.
+    # To use gmail, you need to allow less secure apps to connect
     # Also, probably a good idea to set up a burner gmail for the sending
     to_number = f"RECEIVERNUMBER{carriers['tmobile']}" # ", ".join() for multiple
-    sender = f"SENDEREMAIL{carriers['gmail']}" 
+    sender = f"SENDERADDR{carriers['gmail']}" 
     password = 'SENDERPASS'
     subject = f"CVS Availability in {state}"
     # prepend thetime
@@ -61,12 +61,14 @@ def send(message, thetime, state):
     server.quit()
 
 def findAVaccine():
-    hours_to_run = 3 ###Update this to set the number of hours you want the script to run.
-    max_time = time.time() + hours_to_run*60*60
-    init_time = datetime.now()
     timer = 3600
+    init_time = datetime.now()
+    hours_to_run = 3 ###Update this to set the number of hours you want the script to run.
+    max_time = init_time + timedelta(hours=hours_to_run)
 
     state = 'CA' ###Update with your state abbreviation. Be sure to use all CAPS, e.g. RI
+    cvs_url = f"https://www.cvs.com/immunizations/covid-19-vaccine.vaccine-status.{state.lower()}.json?vaccineinfo"
+    header = "https://www.cvs.com/immunizations/covid-19-vaccine"
 
     ###Update with your cities nearby
     cities = ['ALAMEDA', 'ALAMO', 'ALBANY', 'ANTIOCH', 'BERKELEY', 'CHICO', 'COLMA', 'CUPERTINO', 'DALY CITY', 'DAVIS', 'EAST PALO ALTO', 'HAYWARD', 'LAFAYETTE', 'LATHROP', 'LIVERMORE',
@@ -77,36 +79,41 @@ def findAVaccine():
 
     previousmessage = []
 
-    while time.time() < max_time:
-        thetime = datetime.now()
-        message = []
+    while datetime.now() < max_time:
 
-        response = requests.get(f"https://www.cvs.com/immunizations/covid-19-vaccine.vaccine-status.{state.lower()}.json?vaccineinfo", headers={"Referer":"https://www.cvs.com/immunizations/covid-19-vaccine"})
-        payload = response.json()
+        try:
+            thetime = datetime.now()
+            message = []
 
-        print(thetime)    
+            response = requests.get(cvs_url, headers={"Referer":header})
+            payload = response.json()
 
-        for item in payload["responsePayloadData"]["data"][state]:
+            print(thetime)    
 
-            city = item.get('city')
-            status = item.get('status')
+            for item in payload["responsePayloadData"]["data"][state]:
 
-            if (city in cities) and (status == 'Available'):
-                message.append(f"{city}, {state} -- {status}")
-                print(f"{city}, {state} -- {status}")
+                city = item.get('city')
+                status = item.get('status')
 
-        print('\n')
+                if (city in cities) and (status == 'Available'):
+                    message.append(f"{city}, {state} -- {status}")
+                    print(f"{city}, {state} -- {status}")
 
-        # Decouple the checking to sending alerts
-        # if no change for an hour, just send a message that there's no change
-        if (message != previousmessage) or ((thetime - init_time).total_seconds() > timer):
-            # set previous to this new one
-            previousmessage = message[:]
-            # reset the timer
-            init_time = datetime.now()
-            # send the email!
-            send(message, thetime, state)
-        
-        time.sleep(10) ##This runs every 10 seconds. Probably a little aggressive, choose 300 or 600. Email will be sent every hour, or when a change is detected
+            print()
+
+            # Decouple the checking to sending alerts
+            # if no change for an hour, just send a message that there's no change
+            if (message != previousmessage) or ((thetime - init_time).total_seconds() > timer):
+                # set previous to this new one
+                previousmessage = message[:]
+                # reset the timer
+                init_time = datetime.now()
+                # send the email!
+                send(message, thetime, state)
+            
+            time.sleep(300) ##This runs every 10 seconds. Probably a little aggressive, choose 300 or 600. Email will be sent every hour, or when a change is detected
+        except KeyboardInterrupt:
+            print('Exiting...')
+            break
 
 findAVaccine() ###this final line runs the function. Your terminal will output the cities every 60seconds
