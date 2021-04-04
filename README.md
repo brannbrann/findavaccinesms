@@ -9,15 +9,19 @@ Requires requests:
 
 1. pip install requests
 
-Since I could not install beepy on a Win10 machine, I chose to have it send a TXT/SMS/EMAIL. You
+Since I could not install beepy on a Win10 machine, I chose to have it send a TXT/SMS/EMAIL (thanks Ajay!). You
 can also add the ability to send to a Slack channel, if desired.
 
 Everything you need to do this is, outside of requests, is already included with Python3.
 
 To enable sending to Gmail, you should create a new Gmail account. Make note of the new
-email address and password. Add those to the script where appropriate.
+email address and password. Add those to the script where appropriate. You will also need to enable 
+'allow less secure apps' in your Gmail settings to get email flowing.
 
-Next, the hardcoded 'defaults' for me will be different for you.
+Just a note on SMS email gateways, there is a comprehensive, worldwide I might add, list here:
+https://github.com/typpo/textbelt
+
+Next, the hardcoded 'defaults' for will be different for you.
 
 The state and cities variables should be changed. If you live in the Bay Area, the cities shown
 are within 50km of San Francisco. You may need to update the values. I used freemaptools.com to get
