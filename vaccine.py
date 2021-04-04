@@ -2,14 +2,14 @@
 This is a python script that requires you have python installed, or in a cloud environment.
 
 This script scrapes the CVS website looking for vaccine appointments in the cities you list.
-To update for your area, update the locations marked with ### below.
+To update for your area, update the locations commented below.
 
 If you receive an error that says something is not installed, type
 
 pip install requests
 etc.
 
-in your terminal.
+Happy vaccination!
 '''
 import requests
 import time
@@ -26,7 +26,8 @@ def send(message, thetime, state):
         'sprint':   '@page.nextel.com',
         'gmail':    '@gmail.com'
     }
-    # Replace the receivernumber, sender, and password with your own, and consider using a list for multiple senders.
+    # Replace the receivernumber, senderaddr, and senderpass with your own
+    # Consider using a list for multiple recievers.
     # To use gmail, you need to allow less secure apps to connect
     # Also, probably a good idea to set up a burner gmail for the sending
     to_number = f"RECEIVERNUMBER{carriers['tmobile']}" # ", ".join() for multiple
@@ -71,49 +72,53 @@ def findAVaccine():
     header = "https://www.cvs.com/immunizations/covid-19-vaccine"
 
     ###Update with your cities nearby
-    cities = ['ALAMEDA', 'ALAMO', 'ALBANY', 'ANTIOCH', 'BERKELEY', 'CHICO', 'COLMA', 'CUPERTINO', 'DALY CITY', 'DAVIS', 'EAST PALO ALTO', 'HAYWARD', 'LAFAYETTE', 'LATHROP', 'LIVERMORE',
-    'LOS GATOS', 'DANVILLE', 'DIXON', 'DUBLIN', 'EL CERRITO', 'ELK GROVE', 'EMERYVILLE' 'FAIRFIELD', 'FREMONT', 'MENLO PARK', 'SAN FRANCISCO', 'OAKLAND', 'WOODLAND', 'SACRAMENTO', 'STOCKTON',
-    'VACAVILLE', 'VALLEJO', 'WALNUT CREEK', 'MILL VALLEY', 'MORAGA', 'NEWARK', 'NOVATO', 'ORINDA', 'PITTSBURG', 'PINOLE', 'PLEASANT HILL', 'REDWOOD CITY', 'RICHMOND', 'SAN ANSELMO',
-    'SAN BRUNO', 'SAN CARLOS', 'SAN LEANDRO', 'SAN MATEO', 'SAN RAFAEL', 'SAN RAMON', 'SAUSALITO', 'SARATOGA'
+    cities = ['ALAMEDA', 'ALAMO', 'ALBANY', 'ANTIOCH', 'BERKELEY', 'CHICO', 'COLMA', 'CUPERTINO', 'DALY CITY', 'DAVIS',
+    'EAST PALO ALTO', 'HAYWARD', 'LAFAYETTE', 'LATHROP', 'LIVERMORE', 'LOS GATOS', 'DANVILLE', 'DIXON', 'DUBLIN', 'EL CERRITO',
+    'ELK GROVE', 'EMERYVILLE' 'FAIRFIELD', 'FREMONT', 'MENLO PARK', 'SAN FRANCISCO', 'OAKLAND', 'WOODLAND', 'SACRAMENTO',
+    'STOCKTON', 'VACAVILLE', 'VALLEJO', 'WALNUT CREEK', 'MILL VALLEY', 'MORAGA', 'NEWARK', 'NOVATO', 'ORINDA', 'PITTSBURG',
+    'PINOLE', 'PLEASANT HILL', 'REDWOOD CITY', 'RICHMOND', 'SAN ANSELMO', 'SAN BRUNO', 'SAN CARLOS', 'SAN LEANDRO', 'SAN MATEO',
+    'SAN RAFAEL', 'SAN RAMON', 'SAUSALITO', 'SARATOGA'
     ]
 
     previousmessage = []
 
     while datetime.now() < max_time:
 
-        try:
-            thetime = datetime.now()
-            message = []
+        thetime = datetime.now()
+        message = []
 
-            response = requests.get(cvs_url, headers={"Referer":header})
-            payload = response.json()
+        response = requests.get(cvs_url, headers={"Referer":header})
+        payload = response.json()
 
-            print(thetime)    
+        print(thetime)    
 
-            for item in payload["responsePayloadData"]["data"][state]:
+        for item in payload["responsePayloadData"]["data"][state]:
 
-                city = item.get('city')
-                status = item.get('status')
+            city = item.get('city')
+            status = item.get('status')
 
-                if (city in cities) and (status == 'Available'):
-                    message.append(f"{city}, {state} -- {status}")
-                    print(f"{city}, {state} -- {status}")
+            if (city in cities) and (status == 'Available'):
+                message.append(f"{city}, {state} -- {status}")
+                print(f"{city}, {state} -- {status}")
 
-            print()
+        print()
 
-            # Decouple the checking to sending alerts
-            # if no change for an hour, just send a message that there's no change
-            if (message != previousmessage) or ((thetime - init_time).total_seconds() > timer):
-                # set previous to this new one
-                previousmessage = message[:]
-                # reset the timer
-                init_time = datetime.now()
-                # send the email!
-                send(message, thetime, state)
-            
-            time.sleep(300) ##This runs every 10 seconds. Probably a little aggressive, choose 300 or 600. Email will be sent every hour, or when a change is detected
-        except KeyboardInterrupt:
-            print('Exiting...')
-            break
+        # Decouple the checking to sending alerts
+        # if no change for an hour, just send a message that there's no change
+        if (message != previousmessage) or ((thetime - init_time).total_seconds() > timer):
+            # set previous to this new one
+            previousmessage = message[:]
+            # reset the timer
+            init_time = datetime.now()
+            # send the email!
+            send(message, thetime, state)
+        
+        # This runs every 300 seconds (5 minutes)
+        # Email will be sent every hour, or when a change is detected
+        time.sleep(300)
 
-findAVaccine() ###this final line runs the function. Your terminal will output the cities every 60seconds
+if __name__ == '__main__':
+    try:
+        findAVaccine()
+    except KeyboardInterrupt:
+        print('Exiting...')
