@@ -30,9 +30,9 @@ def send(message, thetime, state):
     # Consider using a list for multiple recievers.
     # To use gmail, you need to allow less secure apps to connect
     # Also, probably a good idea to set up a burner gmail for the sending
-    to_number = f"4152641853{carriers['tmobile']}" # ", ".join() for multiple
-    sender = f"brannsbunnsms{carriers['gmail']}" 
-    password = '0787cqdmju'
+    to_number = f"RECEIVERADDR{carriers['tmobile']}" # ", ".join() for multiple
+    sender = f"SENDERADDR{carriers['gmail']}" 
+    password = 'SENDERPASS'
     subject = f"CVS Availability in {state}"
     # prepend thetime
     message.insert(0, thetime.strftime("%m/%d/%Y, %H:%M %p"))
