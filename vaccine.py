@@ -30,9 +30,9 @@ def send(message, thetime, state):
     # Consider using a list for multiple recievers.
     # To use gmail, you need to allow less secure apps to connect
     # Also, probably a good idea to set up a burner gmail for the sending
-    to_number = f"RECEIVERNUMBER{carriers['tmobile']}" # ", ".join() for multiple
-    sender = f"SENDERADDR{carriers['gmail']}" 
-    password = 'SENDERPASS'
+    to_number = f"4152641853{carriers['tmobile']}" # ", ".join() for multiple
+    sender = f"brannsbunnsms{carriers['gmail']}" 
+    password = '0787cqdmju'
     subject = f"CVS Availability in {state}"
     # prepend thetime
     message.insert(0, thetime.strftime("%m/%d/%Y, %H:%M %p"))
@@ -64,7 +64,7 @@ def send(message, thetime, state):
 def findAVaccine():
     timer = 3600
     init_time = datetime.now()
-    hours_to_run = 3 ###Update this to set the number of hours you want the script to run.
+    hours_to_run = 24 ###Update this to set the number of hours you want the script to run.
     max_time = init_time + timedelta(hours=hours_to_run)
 
     state = 'CA' ###Update with your state abbreviation. Be sure to use all CAPS, e.g. RI
@@ -111,6 +111,7 @@ def findAVaccine():
             # reset the timer
             init_time = datetime.now()
             # send the email!
+            print('Sending status update...')
             send(message, thetime, state)
         
         # This runs every 300 seconds (5 minutes)
